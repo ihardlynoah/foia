@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For the Record \u2014 Public Records Request Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2E9D8; --panel:#FFFFFF; --panel-2:#E3DCC8; --panel-3:#EAE2CE;
+  --ink:#00249C; --ink-soft:#4A5590; --ink-faint:#7987BA;
+  --rule:#D4D1D1; --rule-strong:#B6B8C9;
+  --accent:#00249C; --accent-strong:#001A73; --accent-ink:#FFFFFF;
+  --teal:#5C69A8; --teal-soft:#E4E5F0;
+  --focus:#00249C;
+  --shadow: 0 1px 2px rgba(0,36,156,0.08), 0 6px 20px rgba(0,36,156,0.12);
+}
+:root:not([data-theme="light"]) { }
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0B0E24; --panel:#151936; --panel-2:#1D2142; --panel-3:#22264A;
+    --ink:#ECE7F0; --ink-soft:#B7B8D9; --ink-faint:#8A8CB0;
+    --rule:#2C2F55; --rule-strong:#3B3F72;
+    --accent:#7987BA; --accent-strong:#9AA6D4; --accent-ink:#0B0E24;
+    --teal:#B6B8C9; --teal-soft:#232752;
+    --focus:#9AA6D4;
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 26px rgba(0,0,0,0.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0B0E24; --panel:#151936; --panel-2:#1D2142; --panel-3:#22264A;
+  --ink:#ECE7F0; --ink-soft:#B7B8D9; --ink-faint:#8A8CB0;
+  --rule:#2C2F55; --rule-strong:#3B3F72;
+  --accent:#7987BA; --accent-strong:#9AA6D4; --accent-ink:#0B0E24;
+  --teal:#B6B8C9; --teal-soft:#232752;
+  --focus:#9AA6D4;
+  --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 8px 26px rgba(0,0,0,0.5);
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:'IBM Plex Sans',-apple-system,'Segoe UI',Roboto,sans-serif;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--teal);}
+::selection{background:var(--accent); color:var(--accent-ink);}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px;}
+
+.wrap{max-width:1240px; margin:0 auto; padding:0 20px 60px;}
+
+/* ---------- Masthead ---------- */
+.masthead{
+  border-bottom:1px solid var(--rule-strong);
+  padding:34px 0 24px;
+  margin-bottom:28px;
+}
+.masthead .kicker{
+  font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:.03em;
+  color:var(--teal); margin:0 0 10px;
+}
+.masthead h1{
+  font-family:'Source Serif 4',Georgia,serif; font-weight:700;
+  font-size:clamp(28px,4vw,42px); line-height:1.08; margin:0 0 12px; max-width:16ch;
+}
+.masthead p{
+  max-width:62ch; color:var(--ink-soft); font-size:16px; margin:0;
+}
+.review-badge{
+  display:inline-flex; align-items:center; gap:8px; margin-top:14px;
+  font-family:'IBM Plex Sans',sans-serif; font-size:13px; font-weight:600; color:var(--accent);
+  border:1px solid var(--accent); border-radius:999px; padding:6px 14px 6px 10px;
+}
+.review-badge .badge-check{ font-size:14px; }
+
+.disclaimer-banner{
+  background:var(--panel-3); border:1px solid var(--rule-strong); border-left:4px solid var(--accent);
+  border-radius:2px; padding:16px 20px; margin-bottom:28px;
+  display:flex; gap:14px; align-items:flex-start;
+}
+.disclaimer-banner .disclaimer-icon{ font-size:19px; line-height:1.3; flex:none; }
+.disclaimer-banner p{ margin:0; font-size:13.5px; line-height:1.55; color:var(--ink); max-width:76ch; }
+.disclaimer-banner strong{ font-weight:700; }
+
+/* ---------- Layout ---------- */
+.builder{
+  display:grid; grid-template-columns: minmax(340px,460px) 1fr; gap:28px; align-items:start;
+}
+@media (max-width:900px){
+  .builder{grid-template-columns:1fr;}
+}
+
+.form-col{ display:flex; flex-direction:column; gap:22px; }
+
+.step{
+  background:var(--panel); border:1px solid var(--rule); border-radius:3px;
+  padding:20px 22px 22px;
+}
+.step-num{
+  display:inline-flex; align-items:center; justify-content:center;
+  font-family:'IBM Plex Mono',monospace; font-size:12px; font-weight:500;
+  width:22px; height:22px; border:1px solid var(--rule-strong); border-radius:50%;
+  color:var(--ink-soft); margin-right:9px; flex:none;
+}
+.step h2{
+  font-family:'Source Serif 4',Georgia,serif; font-weight:600; font-size:19px;
+  margin:0 0 4px; display:flex; align-items:center;
+}
+.step .step-sub{ color:var(--ink-faint); font-size:13.5px; margin:0 0 16px 31px; }
+
+label.field-label{
+  display:block; font-size:13px; font-weight:600; color:var(--ink-soft);
+  margin:0 0 6px;
+}
+select, input[type=text], input[type=email], input[type=tel], input[type=number], textarea{
+  width:100%; font-family:inherit; font-size:15px; color:var(--ink);
+  background:var(--panel-2); border:1px solid var(--rule-strong); border-radius:2px;
+  padding:9px 10px;
+}
+textarea{resize:vertical; min-height:70px; line-height:1.4;}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.field{margin-bottom:14px;}
+.field:last-child{margin-bottom:0;}
+.hint{font-size:12.5px; color:var(--ink-faint); margin-top:5px;}
+
+.statute-chip{
+  display:inline-flex; align-items:baseline; gap:7px; flex-wrap:wrap;
+  font-family:'IBM Plex Mono',monospace; font-size:12.5px;
+  background:var(--teal-soft); color:var(--teal); border-radius:2px;
+  padding:7px 10px; margin-top:10px;
+}
+.statute-chip b{font-family:'IBM Plex Sans',sans-serif; font-weight:600; color:var(--ink);}
+
+/* Topic tabs (folder-tab metaphor for the three required requests) */
+.topic{
+  border:1px solid var(--rule-strong); border-radius:3px; background:var(--panel-2);
+  margin-bottom:10px; overflow:hidden;
+}
+.topic:last-child{margin-bottom:0;}
+.topic-head{
+  display:flex; align-items:flex-start; gap:12px; padding:13px 14px; cursor:pointer;
+}
+.topic input[type=checkbox]{ margin-top:3px; width:17px; height:17px; accent-color:var(--accent); flex:none; }
+.topic-title{font-weight:600; font-size:15px;}
+.topic-desc{font-size:13px; color:var(--ink-soft); margin-top:2px;}
+.topic-count{
+  font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-faint);
+  white-space:nowrap; margin-left:auto; padding-top:2px;
+}
+.topic.is-checked{ background:var(--panel); border-color:var(--accent); }
+
+details.more-topics{ margin-top:12px; }
+details.more-topics > summary{
+  cursor:pointer; font-size:13.5px; font-weight:600; color:var(--teal); list-style:none;
+  display:flex; align-items:center; gap:6px;
+}
+details.more-topics > summary::-webkit-details-marker{ display:none; }
+details.more-topics > summary::before{ content:"+"; font-family:'IBM Plex Mono',monospace; }
+details.more-topics[open] > summary::before{ content:"\2212"; }
+details.more-topics .topic{ margin-top:10px; }
+
+.feewaiver-toggle{
+  display:flex; align-items:flex-start; gap:12px; padding:13px 14px;
+  border:1px solid var(--rule-strong); border-radius:3px; background:var(--panel-2);
+}
+.feewaiver-toggle.is-checked{ border-color:var(--accent); background:var(--panel); }
+.feewaiver-toggle input{ margin-top:3px; width:17px; height:17px; accent-color:var(--accent); flex:none; }
+
+.fw-note{
+  font-size:12.5px; color:var(--ink-soft); background:var(--panel-3);
+  border-left:2px solid var(--accent); padding:8px 10px; margin-top:12px; border-radius:0 2px 2px 0;
+}
+.fw-note b{color:var(--ink);}
+
+/* ---------- Preview column ---------- */
+.preview-col{ position:sticky; top:20px; }
+@media (max-width:900px){ .preview-col{ position:static; } }
+
+.preview-toolbar{
+  display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;
+}
+.preview-toolbar .spacer{flex:1;}
+.btn{
+  font-family:'IBM Plex Sans',sans-serif; font-size:13.5px; font-weight:600;
+  border-radius:2px; padding:9px 15px; cursor:pointer; border:1px solid var(--rule-strong);
+  background:var(--panel); color:var(--ink);
+}
+.btn:hover{ border-color:var(--ink-soft); }
+.btn.primary{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+.btn.primary:hover{ background:var(--accent-strong); border-color:var(--accent-strong); }
+.btn:disabled{ opacity:.55; cursor:default; }
+.status-msg{ font-size:12.5px; color:var(--ink-faint); }
+
+.letter-sheet{
+  background:var(--panel); border:1px solid var(--rule);
+  box-shadow:var(--shadow); border-radius:2px;
+  padding:38px 34px; min-height:400px;
+}
+.letter-sheet pre{
+  font-family:'Source Serif 4',Georgia,serif; font-size:15.5px; line-height:1.6;
+  white-space:pre-wrap; word-wrap:break-word; margin:0; color:var(--ink);
+}
+.letter-sheet textarea{
+  font-family:'Source Serif 4',Georgia,serif; font-size:15.5px; line-height:1.6;
+  white-space:pre-wrap; word-wrap:break-word; color:var(--ink);
+  width:100%; min-height:400px; border:none; background:transparent; padding:0;
+  resize:vertical;
+}
+.letter-sheet textarea::placeholder{ color:var(--ink-faint); font-style:italic; }
+.letter-sheet textarea:focus{ outline:none; }
+.edit-hint{ font-size:12px; color:var(--ink-faint); margin:10px 0 0; }
+#printMirror{ display:none; }
+
+.submit-steps{ margin:0; padding-left:22px; }
+.submit-steps li{ margin-bottom:10px; font-size:14px; line-height:1.5; }
+.submit-steps li:last-child{ margin-bottom:0; }
+.submit-links{ display:flex; flex-direction:column; gap:8px; margin-top:14px; }
+.submit-links a{
+  font-size:13.5px; font-weight:600; text-decoration:none; color:var(--teal);
+  border:1px solid var(--rule-strong); border-radius:2px; padding:9px 12px;
+  background:var(--panel-2);
+}
+.submit-links a:hover{ border-color:var(--teal); background:var(--panel); }
+.submit-residency{
+  font-size:12.5px; color:var(--ink-soft); background:var(--panel-3);
+  border-left:2px solid var(--accent); padding:8px 10px; margin:0 0 14px; border-radius:0 2px 2px 0;
+}
+
+.footnote{
+  margin-top:22px; font-size:12.5px; color:var(--ink-faint); max-width:74ch;
+}
+
+.site-footer{
+  border-top:1px solid var(--rule); margin-top:40px; padding:18px 0 30px;
+}
+.site-footer p{ margin:0; font-size:12.5px; color:var(--ink-faint); }
+
+@media print{
+  .form-col, .masthead, .disclaimer-banner, .preview-toolbar, .footnote, .site-footer{ display:none !important; }
+  .builder{ display:block; }
+  .letter-sheet{ box-shadow:none; border:none; padding:0; }
+  .letter-sheet textarea{ display:none; }
+  #printMirror{
+    display:block; font-family:'Source Serif 4',Georgia,serif; font-size:13px;
+    line-height:1.6; white-space:pre-wrap; word-wrap:break-word; color:#000;
+  }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <p class="kicker">PUBLIC RECORDS &amp; FEDERAL FOIA &nbsp;&middot;&nbsp; REQUEST LETTER BUILDER</p>
+    <h1>For the Record</h1>
+    <p>Pick your state, D.C., or the federal government, choose what you want to know, and this tool assembles a formal open-records request &mdash; citing the right statute, with pre-written language for immigration-enforcement cooperation, Palantir, and Flock Safety / ALPR records, plus a public-interest fee-waiver request.</p>
+    <div class="review-badge">
+      <span class="badge-check" aria-hidden="true">&#9989;</span>
+      Templates reviewed by a licensed attorney &middot; last reviewed September 17, 2026
+    </div>
+  </div>
+
+  <div class="disclaimer-banner">
+    <span class="disclaimer-icon" aria-hidden="true">&#9878;&#65039;</span>
+    <p><strong>For public education only &mdash; this is not legal advice.</strong> For the Record helps you draft a public-records request; it does not evaluate your situation and does not represent you. Using this site, or the letters it generates, does not create an attorney-client relationship between you and anyone involved in building it. For advice about your specific situation, consult a licensed attorney in your state.</p>
+  </div>
+
+  <div class="builder">
+    <div class="form-col">
+
+      <div class="step">
+        <h2><span class="step-num">1</span>Jurisdiction</h2>
+        <p class="step-sub">Which state, D.C., or the federal government governs the agency you're asking?</p>
+        <div class="field">
+          <label class="field-label" for="stateSelect">State / jurisdiction</label>
+          <select id="stateSelect"></select>
+        </div>
+        <div id="statuteChip"></div>
+      </div>
+
+      <div class="step">
+        <h2><span class="step-num">2</span>Agency</h2>
+        <p class="step-sub">Who are you sending this to?</p>
+        <div class="field">
+          <label class="field-label" for="agencyName">Agency or department name</label>
+          <input type="text" id="agencyName" placeholder="e.g., Springfield Police Department">
+        </div>
+        <div class="field">
+          <label class="field-label" for="agencyAddress">Agency mailing address <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+          <textarea id="agencyAddress" rows="2" placeholder="Records / FOIA Officer&#10;100 Main St&#10;Anytown, ST 00000"></textarea>
+        </div>
+      </div>
+
+      <div class="step">
+        <h2><span class="step-num">3</span>What are you requesting?</h2>
+        <p class="step-sub">Choose one or more pre-built requests. Each expands into a detailed list of records when generated.</p>
+        <div id="requiredTopics"></div>
+        <details class="more-topics">
+          <summary>Add other common records requests</summary>
+          <div id="bonusTopics"></div>
+        </details>
+        <div class="field" style="margin-top:16px;">
+          <label class="field-label">Date range for records requested</label>
+          <div class="row2">
+            <input type="date" id="dateStart" value="2025-01-20">
+            <input type="date" id="dateEnd">
+          </div>
+          <p class="hint">Leave the end date blank for &ldquo;to the present.&rdquo; Defaults to January 20, 2025 &mdash; change it to cover a different period.</p>
+        </div>
+        <div class="field">
+          <label class="field-label" for="customText">Anything else to add? <span style="font-weight:400;color:var(--ink-faint)">(optional, your own words)</span></label>
+          <textarea id="customText" rows="3" placeholder="e.g., a specific named contract, a narrower request, etc."></textarea>
+        </div>
+      </div>
+
+      <div class="step">
+        <h2><span class="step-num">4</span>Fees &amp; processing speed</h2>
+        <p class="step-sub">Most states let you ask that fees be waived when the request serves the public interest.</p>
+        <label class="feewaiver-toggle" id="fwToggleLabel">
+          <input type="checkbox" id="wantFeeWaiver" checked>
+          <span>
+            <span class="topic-title">Request a public-interest fee waiver</span>
+            <span class="topic-desc">Argues the records concern significant public accountability and won't be used commercially.</span>
+          </span>
+        </label>
+        <div id="fwNote"></div>
+        <div class="field" style="margin-top:14px;">
+          <label class="field-label" for="purposeStatement">Describe the public interest <span style="font-weight:400;color:var(--ink-faint)">(optional &mdash; a sensible default is used if left blank)</span></label>
+          <textarea id="purposeStatement" rows="2" placeholder="these records concern a matter of significant public interest and are important to public accountability and oversight of government conduct"></textarea>
+        </div>
+        <div class="field">
+          <label class="field-label" for="feeCap">If a waiver is only partial, I authorize fees up to $ <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+          <input type="number" id="feeCap" placeholder="e.g., 25" min="0">
+        </div>
+        <div id="expeditedSection" style="margin-top:16px;"></div>
+      </div>
+
+      <div class="step">
+        <h2><span class="step-num">5</span>Your information</h2>
+        <p class="step-sub">Most public-records laws don't require you to explain why you want records &mdash; but they do need to know who to send them to.</p>
+        <div class="field">
+          <label class="field-label" for="reqName">Full name</label>
+          <input type="text" id="reqName" placeholder="Jane Requester">
+        </div>
+        <div class="field">
+          <label class="field-label" for="reqOrg">Organization <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+          <input type="text" id="reqOrg" placeholder="e.g., self-represented / a nonprofit / a newsroom">
+        </div>
+        <div class="field">
+          <label class="field-label" for="reqAddress">Mailing address <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+          <textarea id="reqAddress" rows="2" placeholder="1 Elm St&#10;Anytown, ST 00000"></textarea>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label class="field-label" for="reqEmail">Email</label>
+            <input type="email" id="reqEmail" placeholder="you@example.com">
+          </div>
+          <div class="field">
+            <label class="field-label" for="reqPhone">Phone <span style="font-weight:400;color:var(--ink-faint)">(optional)</span></label>
+            <input type="tel" id="reqPhone" placeholder="(555) 123-4567">
+          </div>
+        </div>
+        <label style="display:flex; align-items:center; gap:9px; font-size:14px; margin-top:4px;">
+          <input type="checkbox" id="preferElectronic" checked style="width:16px;height:16px;accent-color:var(--accent);">
+          Ask for electronic copies where possible
+        </label>
+      </div>
+
+      <div class="step">
+        <h2><span class="step-num">6</span>How to submit it</h2>
+        <p class="step-sub">Where this actually needs to go, and what to expect, for the jurisdiction you picked.</p>
+        <div id="submitGuidance"></div>
+      </div>
+
+    </div>
+
+    <div class="preview-col">
+      <div class="preview-toolbar">
+        <button class="btn primary" id="copyBtn">Copy letter</button>
+        <button class="btn" id="downloadBtn">Download .txt</button>
+        <button class="btn" id="printBtn">Print / save as PDF</button>
+        <span class="spacer"></span>
+        <span class="status-msg" id="statusMsg"></span>
+      </div>
+      <div class="letter-sheet">
+        <textarea id="letterOut" placeholder="Fill in the form to generate your request letter&hellip;" spellcheck="false"></textarea>
+        <pre id="printMirror"></pre>
+      </div>
+      <p class="edit-hint">This box is directly editable &mdash; feel free to tweak the wording by hand. Changing a field on the left regenerates the letter and replaces any manual edits.</p>
+      <p class="footnote">For the Record is provided for public education only and is not legal advice; using it does not create an attorney-client relationship. It drafts a request based on publicly available summaries of each state's public-records statute. Statutes are renumbered and amended; before relying on a citation in a dispute with an agency, confirm it against your state's current code. Sources: National Conference of State Legislatures, <em>Public Records Law and State Legislatures</em>; Reporters Committee for Freedom of the Press, <em>Open Government Guide</em>; Ballotpedia, <em>List of who can make public record requests by state</em>.</p>
+    </div>
+  </div>
+  <footer class="site-footer">
+    <p>This website was built with the assistance of AI.</p>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   DATA: state citations + fee-waiver provisions
+   Sources: NCSL "Public Records Law and State Legislatures" (Apr. 2025);
+   RCFP Open Government Guide, "3. Provisions for fee waivers".
+   ========================================================================= */
+const STATES = [
+{code:"FED",name:"Federal Government (any U.S. agency)",actName:"Freedom of Information Act",citation:"5 U.S.C. \u00a7 552",feeWaiver:{tier:"mandatory",citation:"5 U.S.C. \u00a7 552(a)(4)(A)(iii)",note:"An agency must furnish records without charge, or at a reduced charge, where disclosure of the information is in the public interest because it is likely to contribute significantly to public understanding of government operations or activities and is not primarily in the commercial interest of the requester."},
+  expedited:{available:true,citation:"5 U.S.C. \u00a7 552(a)(6)(E)",
+    note:"An agency must grant expedited processing on a showing of \u201ccompelling need\u201d: either an imminent threat to life or physical safety, or \u2014 for a requester primarily engaged in disseminating information \u2014 urgency to inform the public about actual or alleged government activity. The agency must decide whether to grant it within 10 days.",
+    grounds:[
+      {id:"threat",label:"Imminent threat to life or physical safety"},
+      {id:"inform",label:"Urgency to inform the public (requester primarily disseminates information)"}
+    ]}},
+{code:"AL",name:"Alabama",actName:"Alabama Open Records Act",citation:"Ala. Code \u00a7 36-12-40 et seq.",feeWaiver:{tier:"discretionary",citation:"Ala. Code \u00a7 36-12-44(a)(2)",note:"Officers/agencies may waive fees for \u201cstandard\u201d requests needing less than eight hours of staff time."}},
+{code:"AK",name:"Alaska",actName:"Alaska Public Records Act",citation:"Alaska Stat. \u00a7 40.25.110 et seq.",feeWaiver:{tier:"discretionary",citation:"Alaska Stat. \u00a7 40.25.110(d)",note:"Agencies may reduce or waive a fee when it is determined to be in the public interest; waivers must be applied uniformly."}},
+{code:"AZ",name:"Arizona",actName:"Arizona Public Records Law",citation:"Ariz. Rev. Stat. \u00a7 39-121 et seq.",feeWaiver:{tier:"none",citation:"",note:"No specific statutory public-interest fee-waiver provision identified; waivers, if any, are at the custodian's discretion."}},
+{code:"AR",name:"Arkansas",actName:"Arkansas Freedom of Information Act",citation:"Ark. Code Ann. \u00a7 25-19-101 et seq.",feeWaiver:{tier:"discretionary",citation:"Ark. Code Ann. \u00a7 25-19-105(d)(3)(A)(iv)",note:"Copies may be furnished free or at reduced charge where sought primarily for noncommercial purposes and waiver is in the public interest."}},
+{code:"CA",name:"California",actName:"California Public Records Act",citation:"Cal. Gov. Code \u00a7 7920.000 et seq.",feeWaiver:{tier:"discretionary",citation:"Cal. Gov. Code \u00a7 7922.505",note:"No express public-interest fee-waiver clause, but agencies have discretionary authority to provide greater access than the statutory minimum, including waiving duplication fees."}},
+{code:"CO",name:"Colorado",actName:"Colorado Open Records Act",citation:"Colo. Rev. Stat. \u00a7 24-72-200.1 et seq.",feeWaiver:{tier:"discretionary",citation:"Colo. Rev. Stat. \u00a7 24-72-205(4)",note:"Custodians may reduce or waive fees for electronic records used for a public purpose, including journalism, nonprofit activity, and academic research."}},
+{code:"CT",name:"Connecticut",actName:"Connecticut Freedom of Information Act",citation:"Conn. Gen. Stat. \u00a7 1-200 et seq.",feeWaiver:{tier:"mandatory",citation:"Conn. Gen. Stat. \u00a7 1-212(d)",note:"The agency must waive the fee where, among other grounds, it determines that disclosure benefits the general welfare."}},
+{code:"DE",name:"Delaware",actName:"Delaware Freedom of Information Act",citation:"29 Del. Code \u00a7 10001 et seq.",feeWaiver:{tier:"discretionary",citation:"29 Del. Code \u00a7 10003(m)(2)",note:"An agency may adopt a duplication-fee waiver policy where, for example, the public interest would be served."}},
+{code:"FL",name:"Florida",actName:"Florida Public Records Act",citation:"Fla. Stat. \u00a7 119.01 et seq.",feeWaiver:{tier:"none",citation:"",note:"Fee waivers for public-interest requests are not addressed by statute."}},
+{code:"GA",name:"Georgia",actName:"Georgia Open Records Act",citation:"O.C.G.A. \u00a7 50-18-70 et seq.",feeWaiver:{tier:"none",citation:"",note:"The Act neither requires nor prohibits waiver of search or copying fees; left to agency discretion."}},
+{code:"HI",name:"Hawaii",actName:"Hawaii Uniform Information Practices Act",citation:"Haw. Rev. Stat. \u00a7 92F-1 et seq.",feeWaiver:{tier:"mandatory",citation:"Haw. Code R. \u00a7 2-71-31(a); \u00a7 2-71-32(a)",note:"Agencies must waive the first $30 of search/review fees for any request, and an additional $60 where waiver is shown to be in the public interest."}},
+{code:"ID",name:"Idaho",actName:"Idaho Public Records Act",citation:"Idaho Code \u00a7 74-101 et seq.",feeWaiver:{tier:"mandatory",citation:"Idaho Code \u00a7 74-102(10)(f)",note:"An agency shall not charge fees where disclosure will significantly contribute to public understanding of government, is not primarily for the requester's individual interest, and fees would be a genuine hardship."}},
+{code:"IL",name:"Illinois",actName:"Illinois Freedom of Information Act",citation:"5 ILCS 140/1 et seq.",feeWaiver:{tier:"mandatory",citation:"5 ILCS 140/6(c)",note:"If the request states its purpose and that waiver is in the public interest, the public body must furnish records free or at reduced charge where the principal purpose is disseminating information on government health, safety, welfare, or legal-rights matters and not for personal or commercial benefit."}},
+{code:"IN",name:"Indiana",actName:"Indiana Access to Public Records Act",citation:"Ind. Code \u00a7 5-14-3-1 et seq.",feeWaiver:{tier:"discretionary",citation:"Ind. Code \u00a7 5-14-3-8",note:"No mandatory public-interest waiver, but agencies may waive fees at their discretion, including for noncommercial purposes such as journalism and nonprofit activity."}},
+{code:"IA",name:"Iowa",actName:"Iowa Open Records Act",citation:"Iowa Code \u00a7 22.1 et seq.",feeWaiver:{tier:"none",citation:"Iowa Code \u00a7 22.3",note:"No public-interest waiver provision; the custodian isn't required to charge and must make reasonable efforts to provide records taking under 30 minutes to produce at no charge beyond copying costs."}},
+{code:"KS",name:"Kansas",actName:"Kansas Open Records Act",citation:"Kan. Stat. Ann. \u00a7 45-215 et seq.",feeWaiver:{tier:"none",citation:"Kan. Stat. Ann. \u00a7 45-218(f)",note:"Fees are discretionary (\u201cmay charge\u201d); no public-interest fee-waiver exception in the Act."}},
+{code:"KY",name:"Kentucky",actName:"Kentucky Open Records Act",citation:"Ky. Rev. Stat. \u00a7 61.870 et seq.",feeWaiver:{tier:"none",citation:"",note:"No statutory provision for fee waivers identified."}},
+{code:"LA",name:"Louisiana",actName:"Louisiana Public Records Law",citation:"La. Rev. Stat. \u00a7 44:1 et seq.",feeWaiver:{tier:"discretionary",citation:"La. Rev. Stat. \u00a7 44:32(C)(2)",note:"Copies may be furnished free or at reduced charge to indigent persons, or where the custodian determines use will be limited to a public purpose."}},
+{code:"ME",name:"Maine",actName:"Maine Freedom of Access Act",citation:"1 Me. Rev. Stat. \u00a7 400 et seq.",feeWaiver:{tier:"discretionary",citation:"1 Me. Rev. Stat. \u00a7 408-A(11)",note:"An agency may waive part or all of a fee where the requester is indigent or disclosure is in the public interest, likely to contribute significantly to public understanding of government, and not primarily commercial."}},
+{code:"MD",name:"Maryland",actName:"Maryland Public Information Act",citation:"Md. Gen. Prov. Code \u00a7 4-101 et seq.",feeWaiver:{tier:"discretionary",citation:"Md. Gen. Prov. Code \u00a7 4-206(e)",note:"The custodian may waive fees, considering ability to pay and other relevant factors, where a waiver is in the public interest."}},
+{code:"MA",name:"Massachusetts",actName:"Massachusetts Public Records Law",citation:"Mass. Gen. Laws ch. 66, \u00a7 1 et seq.",feeWaiver:{tier:"discretionary",citation:"950 Mass. Code Regs. 32.07(2)(k)",note:"Waiver is appropriate if disclosure is in the public interest, not primarily commercial, or the requester cannot pay; the Secretary of the Commonwealth urges agencies to waive fees generally."}},
+{code:"MI",name:"Michigan",actName:"Michigan Freedom of Information Act",citation:"Mich. Comp. Laws \u00a7 15.231 et seq.",feeWaiver:{tier:"mandatory",citation:"Mich. Comp. Laws \u00a7 15.234(2)",note:"A public body must waive or reduce a fee it determines is in the public interest because furnishing the records primarily benefits the general public."}},
+{code:"MN",name:"Minnesota",actName:"Minnesota Government Data Practices Act",citation:"Minn. Stat. \u00a7 13.03",feeWaiver:{tier:"none",citation:"",note:"Fee waivers are not offered under the Act."}},
+{code:"MS",name:"Mississippi",actName:"Mississippi Public Records Act of 1983",citation:"Miss. Code Ann. \u00a7 25-61-1 et seq.",feeWaiver:{tier:"none",citation:"Miss. Code Ann. \u00a7 25-61-7",note:"No statutory fee-waiver provision; fees are discretionary (\u201cmay\u201d collect)."}},
+{code:"MO",name:"Missouri",actName:"Missouri Sunshine Law",citation:"Mo. Rev. Stat. \u00a7 610.010 et seq.",feeWaiver:{tier:"discretionary",citation:"Mo. Rev. Stat. \u00a7 610.026.1(1)",note:"Records may be furnished free or at reduced charge where the waiver is determined to be in the public interest and not primarily commercial."}},
+{code:"MT",name:"Montana",actName:"Montana Public Records Act",citation:"Mont. Code Ann. \u00a7 2-6-1001 et seq.",feeWaiver:{tier:"none",citation:"",note:"No statutory public-interest fee-waiver provision identified."}},
+{code:"NE",name:"Nebraska",actName:"Nebraska Public Records Statutes",citation:"Neb. Rev. Stat. \u00a7 84-712 et seq.",feeWaiver:{tier:"none",citation:"",note:"No statutory fee-waiver provision; charging a fee is discretionary."}},
+{code:"NV",name:"Nevada",actName:"Nevada Public Records Act",citation:"Nev. Rev. Stat. \u00a7 239.001 et seq.",feeWaiver:{tier:"discretionary",citation:"Nev. Rev. Stat. \u00a7 239.052(2)",note:"A governmental entity may waive all or part of a fee under a written, uniformly applied and publicly posted policy."}},
+{code:"NH",name:"New Hampshire",actName:"New Hampshire Right-to-Know Law",citation:"N.H. Rev. Stat. \u00a7 91-A:1 et seq.",feeWaiver:{tier:"none",citation:"",note:"The statute does not address public-interest fee waivers."}},
+{code:"NJ",name:"New Jersey",actName:"New Jersey Open Public Records Act",citation:"N.J. Stat. \u00a7 47:1A-1 et seq.",feeWaiver:{tier:"none",citation:"",note:"No general public-interest fee-waiver provision beyond a specific crime-victim waiver; agencies may exercise discretion for small requests."}},
+{code:"NM",name:"New Mexico",actName:"New Mexico Inspection of Public Records Act",citation:"N.M. Stat. \u00a7 14-2-1 et seq.",feeWaiver:{tier:"none",citation:"",note:"No fee-waiver provision exists; a waiver may raise state anti-donation-clause concerns."}},
+{code:"NY",name:"New York",actName:"New York Freedom of Information Law",citation:"N.Y. Pub. Off. Law \u00a7 84 et seq.",feeWaiver:{tier:"none",citation:"N.Y. Pub. Off. Law \u00a7 87(1)(b)",note:"No public-interest fee-waiver provision; agencies set fees by regulation up to the statutory cap."}},
+{code:"NC",name:"North Carolina",actName:"North Carolina Public Records Law",citation:"N.C. Gen. Stat. \u00a7 132-1 et seq.",feeWaiver:{tier:"none",citation:"",note:"No fee-waiver provision, though many agencies do not charge for routine copies."}},
+{code:"ND",name:"North Dakota",actName:"North Dakota Open Records Statute",citation:"N.D. Cent. Code \u00a7 44-04-18 et seq.",feeWaiver:{tier:"none",citation:"",note:"The open-records statute does not address fee waivers."}},
+{code:"OH",name:"Ohio",actName:"Ohio Public Records Act",citation:"Ohio Rev. Code \u00a7 149.43",feeWaiver:{tier:"discretionary",citation:"Ohio Rev. Code \u00a7 149.43(F)",note:"No general waiver provision, but a requester who gives written assurance the records won't be used commercially is treated as noncommercial and gets a lower fee for certain bulk data."}},
+{code:"OK",name:"Oklahoma",actName:"Oklahoma Open Records Act",citation:"Okla. Stat. tit. 51, \u00a7 24A.1 et seq.",feeWaiver:{tier:"mandatory",citation:"Okla. Stat. tit. 51, \u00a7 24A.5(4)",note:"No search fee may be charged for release of records in the public interest, which includes release to the news media, scholars, and taxpayers monitoring government performance."}},
+{code:"OR",name:"Oregon",actName:"Oregon Public Records Law",citation:"Or. Rev. Stat. \u00a7 192.311 et seq.",feeWaiver:{tier:"discretionary",citation:"Or. Rev. Stat. \u00a7 192.324(5)-(6)",note:"A fee waiver or reduction is available where disclosure primarily benefits the general public, with an appeal process for denials."}},
+{code:"PA",name:"Pennsylvania",actName:"Pennsylvania Right-to-Know Law",citation:"65 Pa. Stat. \u00a7 67.101 et seq.",feeWaiver:{tier:"discretionary",citation:"65 Pa. Stat. \u00a7 67.1307(f)",note:"An agency may, but isn't required to, waive duplication fees where it deems a waiver to be in the public interest."}},
+{code:"RI",name:"Rhode Island",actName:"Rhode Island Access to Public Records Act",citation:"R.I. Gen. Laws \u00a7 38-2-1 et seq.",feeWaiver:{tier:"discretionary",citation:"R.I. Gen. Laws \u00a7 38-2-4(e)",note:"Fees for search or retrieval may be reduced or waived where disclosure is in the public interest, likely to contribute significantly to public understanding of government, and not primarily commercial."}},
+{code:"SC",name:"South Carolina",actName:"South Carolina Freedom of Information Act",citation:"S.C. Code \u00a7 30-4-10 et seq.",feeWaiver:{tier:"discretionary",citation:"S.C. Code \u00a7 30-4-30(B)",note:"A public body may waive or reduce search/copying fees if furnishing the information primarily benefits the general public."}},
+{code:"SD",name:"South Dakota",actName:"South Dakota Public Records Act",citation:"S.D. Codified Laws \u00a7 1-27-1 et seq.",feeWaiver:{tier:"discretionary",citation:"S.D. Codified Laws \u00a7 1-27-36",note:"Fees may be waived or reduced if doing so would be in the public interest."}},
+{code:"TN",name:"Tennessee",actName:"Tennessee Public Records Act",citation:"Tenn. Code Ann. \u00a7 10-7-503 et seq.",feeWaiver:{tier:"none",citation:"",note:"No provision requiring or prohibiting fee waivers; a custodian may waive fees only pursuant to a written policy."}},
+{code:"TX",name:"Texas",actName:"Texas Public Information Act",citation:"Tex. Gov't Code \u00a7 552.001 et seq.",feeWaiver:{tier:"discretionary",citation:"Tex. Gov't Code \u00a7 552.267(b)",note:"Information shall be furnished free or at reduced charge if the governmental body determines the waiver is in the public interest because it primarily benefits the general public."}},
+{code:"UT",name:"Utah",actName:"Utah Government Records Access and Management Act (GRAMA)",citation:"Utah Code \u00a7 63G-2-101 et seq.",feeWaiver:{tier:"discretionary",citation:"Utah Code \u00a7 63G-2-203(4)(a)",note:"Entities are encouraged to grant fee waivers where release primarily benefits the public rather than a private person; media requests are presumed to benefit the public."}},
+{code:"VT",name:"Vermont",actName:"Vermont Public Records Act",citation:"1 V.S.A. \u00a7 315 et seq.",feeWaiver:{tier:"none",citation:"",note:"Public-interest fee waivers are not addressed by statute."}},
+{code:"VA",name:"Virginia",actName:"Virginia Freedom of Information Act",citation:"Va. Code \u00a7 2.2-3700 et seq.",feeWaiver:{tier:"none",citation:"",note:"No statutory fee-waiver provision; in practice, fees are frequently not imposed for small requests."}},
+{code:"WA",name:"Washington",actName:"Washington Public Records Act",citation:"Rev. Code Wash. \u00a7 42.56.001 et seq.",feeWaiver:{tier:"discretionary",citation:"Rev. Code Wash. \u00a7 42.56.120(4)",note:"An agency may waive any charge assessed for a request if it has adopted a rule providing for waiver."}},
+{code:"WV",name:"West Virginia",actName:"West Virginia Freedom of Information Act",citation:"W. Va. Code \u00a7 29B-1-1 et seq.",feeWaiver:{tier:"none",citation:"",note:"No specific fee-waiver provision, but the statute only authorizes (doesn't require) charging for copies, so bodies have discretion to waive in the public interest."}},
+{code:"WI",name:"Wisconsin",actName:"Wisconsin Public Records Law",citation:"Wis. Stat. \u00a7 19.31 et seq.",feeWaiver:{tier:"discretionary",citation:"Wis. Stat. \u00a7 19.35(3)(e)",note:"An authority may waive fees where a waiver or reduction is in the public interest."}},
+{code:"WY",name:"Wyoming",actName:"Wyoming Public Records Act",citation:"Wyo. Stat. \u00a7 16-4-201 et seq.",feeWaiver:{tier:"none",citation:"",note:"No statutory fee-waiver provision, though a custodian may waive fees if allowed by written policy."}},
+{code:"DC",name:"District of Columbia",actName:"D.C. Freedom of Information Act of 1976",citation:"D.C. Code \u00a7 2-531 et seq.",feeWaiver:{tier:"mandatory",citation:"D.C. Code \u00a7 2-532(b)",note:"Search and copying fees can be, and as a matter of practice generally are, waived where furnishing the records primarily benefits the general public."}}
+];
+
+/* =========================================================================
+   TOPIC CONTENT
+   ========================================================================= */
+const TOPICS = {
+  immigration:{ id:"immigration", label:"Immigration enforcement cooperation", short:"Cooperation, contacts, and information-sharing with federal immigration enforcement (ICE/CBP/DHS)",
+    intro:"records concerning this agency's relationship with, cooperation with, or communications with federal immigration enforcement agencies \u2014 including U.S. Immigration and Customs Enforcement (\u201cICE\u201d), U.S. Customs and Border Protection (\u201cCBP\u201d), and the U.S. Department of Homeland Security (\u201cDHS\u201d) \u2014 concerning immigration enforcement operations",
+    items:[
+      "Any agreement, memorandum of understanding, memorandum of agreement, intergovernmental service agreement, cooperative agreement, or 287(g) agreement (delegation of immigration authority) between this agency (or any of its divisions, units, or components, including any sheriff's office, police department, or corrections/detention facility) and ICE, CBP, DHS, or any other federal immigration enforcement agency, including all amendments, renewals, and statements of work.",
+      "All Communications between employees or officials of this agency and personnel of ICE, CBP, DHS, or the U.S. Marshals Service concerning immigration enforcement operations, planned or completed enforcement actions, detainer requests, or notification of a person's release date, custody status, or contact information.",
+      "All policies, protocols, directives, training materials, and guidance documents governing how this agency's personnel respond to ICE detainers, administrative warrants, notification requests, or requests for access to individuals in custody.",
+      "Records sufficient to show any data-sharing arrangement, database access, or query access granted to ICE, CBP, DHS, or their contractors to any database, records management system, jail booking system, or license-plate-reader system maintained by this agency.",
+      "Records reflecting participation by any officer or employee of this agency in a joint task force, operation, or working group with ICE, CBP, or DHS concerning immigration enforcement, including rosters, meeting minutes, and after-action reports.",
+      "Any invoices, reimbursement requests, or grant records reflecting payments to or from ICE, CBP, or DHS related to immigration enforcement cooperation, including detention bed-space or task-force reimbursement agreements.",
+      "All documents relating to, discussing, referencing, or analyzing this agency's policies, practices, or posture regarding cooperation with, or participation in, federal immigration enforcement operations, including internal deliberations, briefings, or analyses not otherwise captured by the categories above."
+    ],
+    // When the recipient IS the federal government, the natural request runs the other way:
+    // which state, local, or private entities are cooperating with (or have been asked to
+    // cooperate with) this agency, rather than asking this agency about its own local partners.
+    federal:{
+      short:"Which state, local, or private entities are cooperating with this agency on immigration enforcement",
+      intro:"records concerning any state, local, or private entity's cooperation with, or assistance to, this agency in connection with immigration enforcement operations",
+      items:[
+        "Any agreement, memorandum of understanding, memorandum of agreement, intergovernmental service agreement, cooperative agreement, or 287(g) agreement (delegation of immigration authority) between this agency and any state or local government, law enforcement agency, corrections or detention facility, or private contractor (including any private detention operator such as GEO Group or CoreCivic), including all amendments, renewals, and statements of work, and a current list of all state, local, and private 287(g) participants.",
+        "All Communications between employees or officials of this agency and any state, local, or private entity concerning immigration enforcement operations, planned or completed enforcement actions, detainer requests, or a request for a person's release date, custody status, or contact information sent to or received from that entity.",
+        "All policies, protocols, directives, training materials, guidance documents, or form templates this agency uses to request cooperation, data, or assistance from state, local, or private entities in connection with immigration enforcement, including detainer forms and notification requests.",
+        "Records sufficient to show any data-sharing arrangement, database access, or query access this agency (or its contractors) has been granted to any database, records management system, jail booking system, or license-plate-reader system maintained by a state, local, or private entity, and any records reflecting use of that access.",
+        "Records reflecting participation by any state, local, or private entity in a joint task force, operation, or working group with this agency concerning immigration enforcement, including rosters, meeting minutes, and after-action reports.",
+        "Any invoices, reimbursement requests, grant records, or payments made to or received from any state, local, or private entity related to immigration enforcement cooperation, including detention bed-space payments to county jails or private detention contractors, or task-force reimbursement agreements.",
+        "All documents relating to, discussing, referencing, or analyzing this agency's criteria, policies, or practices for accepting, encouraging, expanding, or terminating cooperation from state, local, or private entities in immigration enforcement, including any list ranking, scoring, or categorizing jurisdictions by their level of cooperation."
+      ]
+    }},
+  palantir:{ id:"palantir", label:"Palantir Technologies relationship", short:"Contracts, information-sharing, and NDAs with Palantir Technologies, Inc.",
+    intro:"records concerning this agency's relationship, contracts, information-sharing, or non-disclosure agreements with Palantir Technologies, Inc. (\u201cPalantir\u201d)",
+    items:[
+      "All contracts, licensing agreements, subscription agreements, software-as-a-service agreements, statements of work, purchase orders, and amendments or renewals between this agency and Palantir.",
+      "All non-disclosure agreements, confidentiality agreements, or similar restrictive covenants between this agency and Palantir, including any provision purporting to limit this agency's ability to disclose the existence or terms of its relationship with Palantir.",
+      "All data-processing agreements, data-sharing agreements, or similar records describing what categories of data this agency has provided to, or made accessible through, any Palantir platform (including Palantir Gotham, Foundry, or any successor product).",
+      "Records sufficient to identify which other governmental entities \u2014 including any federal agency such as ICE, CBP, or DHS \u2014 have or have had access to, or the ability to query, data hosted on or processed through a Palantir platform used by this agency.",
+      "All invoices, purchase orders, and payment records reflecting amounts paid to Palantir.",
+      "Records sufficient to identify: (1) each person who has accessed, queried, or received information collected, stored, processed, or made accessible through any Palantir platform used by this agency; (2) the stated reason, justification, case number, or investigation associated with each such access; and (3) any audit trail, access log, or internal review process used to monitor or oversee such access, including access by personnel of another agency.",
+      "All Communications between this agency's officials or employees and any Palantir representative concerning the scope, renewal, expansion, or termination of services.",
+      "All documents relating to, discussing, referencing, or analyzing any product, platform, service, or software produced, maintained, licensed, or serviced by Palantir \u2014 including without limitation Palantir Gotham, Foundry, Apollo, or AIP \u2014 to the extent used by, offered to, evaluated by, or under consideration by this agency."
+    ],
+    // Direct Palantir contracts are just as relevant when the recipient is a federal agency
+    // (several federal agencies contract with Palantir directly), so the base items stand;
+    // add one item aimed at the federal-specific concern of extending that access downward.
+    federalExtra:"Records sufficient to identify which state, local, or private entities have been granted access to, or the ability to query, any Palantir platform operated by or on behalf of this agency, and any agreement governing that access."},
+  flock:{ id:"flock", label:"Flock Safety / ALPR relationship", short:"Contracts, information-sharing, and NDAs with Flock Safety or other automated license plate reader vendors",
+    intro:"records concerning this agency's relationship, information-sharing, contracts, or non-disclosure agreements with Flock Group, Inc. d/b/a Flock Safety (\u201cFlock\u201d), or any other automated license plate reader (\u201cALPR\u201d) vendor",
+    items:[
+      "All contracts, subscription or service agreements, purchase orders, statements of work, and amendments or renewals between this agency and Flock, or any other ALPR vendor (including but not limited to Motorola Solutions/Vigilant Solutions, Rekor, Genetec, or Axon).",
+      "All non-disclosure agreements or confidentiality agreements between this agency and Flock or any other ALPR vendor.",
+      "All records describing this agency's participation in any cross-jurisdictional or nationwide data-sharing network associated with an ALPR system (including any \u201cnetwork,\u201d \u201cnational lookup,\u201d or similar shared-search feature), including a list of the other agencies with which this agency shares ALPR data or that can query this agency's ALPR data.",
+      "All policies, protocols, or user agreements governing data retention periods, permissible uses, and audit or search-logging requirements for ALPR data.",
+      "Records sufficient to identify: (1) each person who has accessed, searched, or received ALPR data collected through any system operated by or accessible to this agency; (2) the stated reason, justification, or case number associated with each such search or access; and (3) any audit trail, log, or internal review process used to monitor or oversee such access, including access by personnel of another agency.",
+      "A current list of ALPR camera locations operated by or on behalf of this agency.",
+      "All invoices, purchase orders, and payment records reflecting amounts paid to Flock or any other ALPR vendor.",
+      "All training materials provided by Flock or any other ALPR vendor to this agency's personnel.",
+      "All documents relating to, discussing, referencing, or analyzing any product, platform, service, or software produced, maintained, licensed, or serviced by Flock, or by any other ALPR vendor, to the extent used by, offered to, evaluated by, or under consideration by this agency."
+    ],
+    // Flock/ALPR is overwhelmingly a state and local procurement; the federally relevant
+    // question is almost always this agency's access to state/local networks rather than a
+    // direct vendor contract of its own (though a few federal components do have one, so
+    // that possibility is kept as well).
+    federal:{
+      short:"This agency's access to state/local ALPR networks (incl. Flock), and any direct Flock/ALPR vendor relationship",
+      intro:"records concerning this agency's access to, or any agreement enabling access to, automated license plate reader (\u201cALPR\u201d) systems \u2014 including but not limited to Flock Group, Inc. d/b/a Flock Safety (\u201cFlock\u201d) \u2014 operated by state, local, or private entities, and any direct relationship this agency has with Flock or any other ALPR vendor",
+      items:[
+        "Any agreement, memorandum of understanding, data-sharing agreement, or technical arrangement by which this agency, or any of its components, has obtained or requested the ability to search, query, or receive data from any ALPR system, network, or database (including Flock's \u201cnetwork\u201d or \u201cnational lookup\u201d feature) operated by a state, local, or private entity.",
+        "A current list of the state, local, or private ALPR systems or networks to which this agency has access, and, for each, the state, local, or private entity that operates it.",
+        "All contracts, subscription or service agreements, and non-disclosure agreements directly between this agency and Flock or any other ALPR vendor, if any.",
+        "All policies, protocols, or guidance governing when and how this agency's personnel may search or query a state, local, or private ALPR system, and any limits on retention, redisclosure, or use of the results.",
+        "Records sufficient to identify: (1) each person affiliated with this agency who has searched or queried any state, local, or private ALPR system or data; (2) the stated reason, justification, or case number associated with each such search; and (3) any audit trail, log, or internal review process used to monitor or oversee such access.",
+        "All Communications between this agency's officials or employees and any state, local, or private entity, or any ALPR vendor, concerning this agency's access to, or a request for access to, ALPR data.",
+        "All training materials provided to this agency's personnel on searching or querying a state, local, or private ALPR system or network.",
+        "All documents relating to, discussing, referencing, or analyzing this agency's use of, or access to, any ALPR system or network operated by a state, local, or private entity."
+      ]
+    }}
+};
+const BONUS_TOPICS = {
+  surveillance:{ id:"surveillance", label:"Other surveillance technology inventory", short:"Facial recognition, cell-site simulators, social media monitoring, and other surveillance tools",
+    intro:"records sufficient to identify all surveillance technologies acquired, used, or under consideration by this agency",
+    items:[
+      "Any inventory, annual surveillance-technology report, or similar list identifying all surveillance technologies (including facial recognition software, cell-site simulators/IMSI catchers, social media monitoring tools, predictive policing software, gunshot-detection systems, and drones) owned, leased, or used by this agency.",
+      "All contracts, agreements, and non-disclosure agreements with vendors of any such surveillance technology.",
+      "All policies governing the use of, and any required oversight, audit, or reporting procedures for, such surveillance technology.",
+      "Records sufficient to identify: (1) each person who has accessed, queried, or received information collected through any surveillance technology used by this agency; (2) the stated reason, justification, or case number associated with each such access; and (3) any audit trail, log, or internal review process used to monitor or oversee such access.",
+      "All documents relating to, discussing, referencing, or analyzing the acquisition, use, or governance of any surveillance technology by this agency."
+    ]},
+  bodycam:{ id:"bodycam", label:"Body-worn & dash camera policies", short:"Policies governing body-worn camera and dash camera use, retention, and release",
+    intro:"records concerning this agency's body-worn camera and in-car (dash) camera program",
+    items:[
+      "The current policy or general order governing the use, activation, retention, and release of body-worn camera and dash camera recordings.",
+      "All contracts and non-disclosure agreements with the current body-worn camera or dash camera vendor (e.g., Axon/TASER), including data-storage and data-sharing terms.",
+      "Records sufficient to show the current data retention period for body-worn camera and dash camera footage.",
+      "Records sufficient to identify: (1) each person who has accessed or viewed body-worn camera or dash camera footage; (2) the stated reason, justification, or case number associated with each such access; and (3) any audit trail, log, or internal review process used to monitor or oversee such access.",
+      "All documents relating to, discussing, referencing, or analyzing this agency's body-worn or dash camera program."
+    ]},
+  useofforce:{ id:"useofforce", label:"Use-of-force & discipline policies", short:"Use-of-force policy, and aggregate discipline data",
+    intro:"records concerning this agency's use-of-force policy and officer discipline practices",
+    items:[
+      "The current use-of-force policy or general order, including any use-of-force continuum or de-escalation requirements.",
+      "Any early-warning or officer-intervention system policy used to flag officers with repeated use-of-force incidents or complaints.",
+      "Aggregate, de-identified statistics on use-of-force incidents and civilian complaints for the most recent three calendar years, to the extent such aggregate statistics are maintained.",
+      "All documents relating to, discussing, referencing, or analyzing this agency's use-of-force policies or practices."
+    ]}
+};
+
+const DEFINITIONS = [
+  { term:"Document or Record", text:"any record regardless of medium or format, including without limitation e-mails and e-mail attachments; text, SMS, MMS, and other messages sent through phone or messaging-application software (e.g., iMessage, WhatsApp, Signal, Slack, or Microsoft Teams); voicemails and other voice recordings; video and audio recordings, including body-worn and dash-camera footage; photographs; calendar entries, invitations, and scheduling correspondence; memoranda, notes, and internal reports; meeting minutes and agendas; spreadsheets, databases, and database extracts or query results; audit logs and access logs; contracts, purchase orders, invoices, and their exhibits or attachments; training materials and presentations; and prompts submitted to, and responses or output generated by, any artificial intelligence, machine-learning, or large-language-model tool (e.g., ChatGPT, Claude, Microsoft Copilot, or Google Gemini) used by an officer or employee in an official capacity \u2014 including drafts, whether or not finalized, and any copy bearing handwritten or electronic notations not found on the original." },
+  { term:"Communication", text:"any transmission of information between two or more persons or entities, by any means, including without limitation conversations, correspondence, e-mail, text or instant messages, and phone or video calls, whether or not a written record of the exchange was made contemporaneously." },
+  { term:"This agency", text:"the agency, department, division, or office to which this request is addressed, together with its officers, employees, and agents, including any officer or employee acting in an official capacity on a personal device or personal account to the extent used to conduct agency business." }
+];
+
+/* =========================================================================
+   LETTER GENERATION (pure function \u2014 no DOM access)
+   ========================================================================= */
+function fmtDate(d){ return d.toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"}); }
+function romanish(i){ const n=["I","II","III","IV","V","VI","VII","VIII","IX","X"]; return n[i]||String(i+1); }
+function letterIndex(i){ return String.fromCharCode(97+i); }
+
+// Formats a <input type="date"> value ("YYYY-MM-DD") as "Month D, YYYY" without any
+// timezone shifting. Returns "" for an empty/invalid input so callers can fall back to a default.
+function fmtDateInput(v){
+  if (!v) return "";
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (!m) return "";
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  if (isNaN(d.getTime())) return "";
+  return fmtDate(d);
+}
+
+// Applies the jurisdiction-specific override of a topic, if one exists. `federal` fully
+// replaces intro/items for a topic that reads backwards when the recipient IS the federal
+// government (e.g. immigration cooperation); `federalExtra` just appends one extra item to
+// an otherwise jurisdiction-agnostic topic (e.g. Palantir).
+function resolveTopic(topic, isFederal){
+  if (!topic) return topic;
+  if (isFederal && topic.federal){
+    return Object.assign({}, topic, {
+      short: topic.federal.short || topic.short,
+      intro: topic.federal.intro || topic.intro,
+      items: topic.federal.items || topic.items
+    });
+  }
+  if (isFederal && topic.federalExtra){
+    return Object.assign({}, topic, { items: topic.items.concat([topic.federalExtra]) });
+  }
+  return topic;
+}
+
+function generateLetter(input){
+  const { state, agencyName, agencyAddress, topicIds, customRequestText, wantFeeWaiver, feeCapDollars,
+    requesterName, requesterOrg, requesterAddress, requesterEmail, requesterPhone, preferElectronic,
+    purposeStatement, date, topicsMap, definitions, wantExpedited, expeditedGround,
+    dateStart, dateEnd } = input;
+
+  const isFederal = state.code === "FED";
+  const allTopics = topicsMap || Object.assign({}, TOPICS, BONUS_TOPICS);
+  const defs = definitions || DEFINITIONS;
+  const chosen = (topicIds||[]).map(id=>resolveTopic(allTopics[id], isFederal)).filter(Boolean);
+  const today = date || new Date();
+  const canExpedite = !!(wantExpedited && state.expedited && state.expedited.available);
+  const lines = [];
+
+  // --- Sender block (top, as in an ordinary letter) ---
+  lines.push(requesterName || "[Your Name]");
+  if (requesterOrg) lines.push(requesterOrg);
+  if (requesterAddress) requesterAddress.split("\n").forEach(l=>{ if(l.trim()) lines.push(l.trim()); });
+  if (requesterEmail) lines.push(requesterEmail);
+  if (requesterPhone) lines.push(requesterPhone);
+  lines.push("");
+  lines.push(fmtDate(today)); lines.push("");
+  if (agencyName) lines.push(agencyName + (state ? " \u2013 Public Records / FOIA Officer" : ""));
+  if (agencyAddress){ agencyAddress.split("\n").forEach(l=>{ if(l.trim()) lines.push(l.trim()); }); }
+  lines.push("");
+  if (canExpedite) lines.push("EXPEDITED PROCESSING REQUESTED");
+  lines.push("Re: Public Records Request under the " + state.actName + " (" + state.citation + ")");
+  lines.push("");
+  lines.push("To the Records Officer:");
+  lines.push("");
+  lines.push("Pursuant to the " + state.actName + ", " + state.citation + ", I am writing to request copies of the public records described below from this agency. This is a request for existing records; I am not requesting that any new record, list, or compilation be created, and I am not requesting a legal opinion or an answer to questions.");
+  lines.push("");
+
+  if (defs && defs.length){
+    lines.push("Definitions. For purposes of this request, the following terms are used as defined below, consistent with the broad construction of \u201crecord\u201d and \u201cdocument\u201d favored by the Act:");
+    defs.forEach((d, i)=>{
+      if (d.term && d.text) lines.push("   " + letterIndex(i) + ". \u201c" + d.term + "\u201d means " + d.text);
+    });
+    lines.push("");
+  }
+
+  const startLabel = fmtDateInput(dateStart) || "January 20, 2025";
+  const endLabel = fmtDateInput(dateEnd) || "the present";
+
+  if (chosen.length){
+    lines.push("Specifically, for the period from " + startLabel + " to " + endLabel + " unless a different date range is noted for a particular item below, I request the following records:");
+    lines.push("");
+    chosen.forEach((topic, tIdx)=>{
+      lines.push(romanish(tIdx) + ". Regarding " + topic.intro + ":");
+      topic.items.forEach((item, iIdx)=>{ lines.push("   " + letterIndex(iIdx) + ". " + item); });
+      lines.push("");
+    });
+  }
+  if (customRequestText && customRequestText.trim()){
+    lines.push("In addition, I request the following:");
+    lines.push(customRequestText.trim());
+    lines.push("");
+  }
+  if (preferElectronic){
+    lines.push("Where responsive records exist in electronic form, I request that they be produced electronically (e.g., as PDF, native files, or a link to a secure download), which I understand may reduce the agency's costs of production.");
+    lines.push("");
+  }
+  if (wantFeeWaiver){
+    const fw = state.feeWaiver;
+    const purpose = (purposeStatement && purposeStatement.trim()) || "these records concern a matter of significant public interest and are important to public accountability and oversight of government conduct";
+    const purposeSentence = purpose.charAt(0).toUpperCase() + purpose.slice(1);
+    let p = "I request a waiver of all search, review, and duplication fees associated with this request. " + purposeSentence + ". The requested records will not be used for commercial purposes, and disclosure is likely to contribute significantly to public understanding of this agency's operations and activities.";
+    if (fw.tier==="mandatory" && fw.citation){ p += " See " + fw.citation + (fw.note ? " (" + fw.note + ")" : "") + "."; }
+    else if (fw.tier==="discretionary" && fw.citation){ p += " See " + fw.citation + (fw.note ? " (" + fw.note + ")" : "") + ", which authorizes a public-interest fee waiver of this kind."; }
+    else { p += " I am not aware of a specific statutory fee-waiver provision in " + state.name + ", but I ask that you exercise any discretion available to you to waive or minimize fees given the public interest in these records."; }
+    lines.push(p); lines.push("");
+    if (feeCapDollars){
+      lines.push("If a full fee waiver is not granted, please treat this letter as authorization to incur costs up to $" + feeCapDollars + " without further authorization; if the estimated cost will exceed that amount, please contact me before proceeding so that I may narrow the request or arrange payment.");
+    } else {
+      lines.push("If a fee waiver is denied in whole or in part, please provide an itemized fee estimate before proceeding, and please contact me if the anticipated cost of processing this request will exceed $25.");
+    }
+    lines.push("");
+  } else if (feeCapDollars){
+    lines.push("Please treat this letter as authorization to incur costs up to $" + feeCapDollars + " in responding to this request without further authorization; please contact me first if the estimated cost will exceed that amount.");
+    lines.push("");
+  }
+
+  if (canExpedite){
+    const topicPhrase = chosen.length
+      ? chosen.map(t=>t.label).join(chosen.length === 2 ? " and " : ", ").replace(/,([^,]*)$/, chosen.length > 2 ? ", and$1" : "$1")
+      : "the subject matter of this request";
+    let justification = "I request expedited processing of this request pursuant to " + state.expedited.citation + ". ";
+    if (expeditedGround === "threat"){
+      justification += "Delay in obtaining records concerning " + topicPhrase + " directly bears on decisions and enforcement activity that can result in the sudden detention, relocation, removal, or continued unmonitored surveillance of specific, identifiable individuals. The longer these records remain undisclosed, the more completely the window closes for those individuals, their families, and their counsel to learn of and respond to that activity while a response is still possible, so the delay itself is what creates the risk to their safety.";
+    } else {
+      justification += "I am primarily engaged in disseminating information to the public, and there is a genuine urgency to inform the public about " + topicPhrase + ": these are live, actively contested questions of local policy, and the value of disclosure depends on informing that debate while it is still underway, before the relevant decisions, renewals, or contracts are already final and public attention has moved on.";
+    }
+    justification += " I certify that the foregoing statement is true and correct to the best of my knowledge and belief.";
+    lines.push(justification);
+    lines.push("");
+  }
+
+  lines.push("Please provide a response within the time period required under the " + state.actName + ". If any portion of this request is denied, please identify each responsive record or portion withheld and cite the specific statutory exemption you believe applies to it, consistent with the Act's requirements. If some portions of this request are readily granted and others require more time or are contested, please release the uncontested portions promptly rather than waiting to respond to the request as a whole.");
+  lines.push("");
+  lines.push("If this request is denied in whole or in part, please provide the applicable administrative appeal procedure, and I ask that you construe this letter, where consistent with your process, as also invoking that procedure in the event of a denial.");
+  lines.push("");
+  lines.push("Please confirm receipt of this request and, if available, provide a tracking or reference number.");
+  lines.push("");
+  lines.push("Thank you for your attention to this request. I can be reached using the contact information at the top of this letter with any questions or to discuss narrowing the scope of this request if that would expedite a response.");
+  lines.push("");
+  lines.push("Sincerely,"); lines.push("");
+  lines.push(requesterName || "[Your Name]");
+
+  return lines.join("\n");
+}
+
+/* =========================================================================
+   DOM WIRING
+   ========================================================================= */
+const $ = (sel)=>document.querySelector(sel);
+
+function buildStateSelect(){
+  const sel = $("#stateSelect");
+  STATES.forEach(s=>{
+    const opt = document.createElement("option");
+    opt.value = s.code; opt.textContent = s.name;
+    sel.appendChild(opt);
+  });
+  sel.value = "CA";
+}
+
+function renderStatuteChip(){
+  const s = currentState();
+  $("#statuteChip").innerHTML =
+    '<div class="statute-chip"><b>' + escapeHtml(s.actName) + '</b><span>' + escapeHtml(s.citation) + '</span></div>';
+}
+
+function currentState(){
+  const code = $("#stateSelect").value;
+  return STATES.find(s=>s.code===code) || STATES[0];
+}
+
+function topicRow(topic, checked){
+  const div = document.createElement("label");
+  div.className = "topic" + (checked ? " is-checked" : "");
+  div.innerHTML =
+    '<div class="topic-head">' +
+      '<input type="checkbox" data-topic="' + topic.id + '" ' + (checked ? "checked" : "") + '>' +
+      '<span style="flex:1">' +
+        '<span class="topic-title">' + escapeHtml(topic.label) + '</span>' +
+        '<div class="topic-desc">' + escapeHtml(topic.short) + '</div>' +
+      '</span>' +
+      '<span class="topic-count">' + topic.items.length + ' record categories</span>' +
+    '</div>';
+  return div;
+}
+
+function buildTopics(){
+  const req = $("#requiredTopics");
+  ["immigration","palantir","flock"].forEach(id=>{
+    req.appendChild(topicRow(TOPICS[id], false));
+  });
+  const bonus = $("#bonusTopics");
+  Object.keys(BONUS_TOPICS).forEach(id=>{
+    bonus.appendChild(topicRow(BONUS_TOPICS[id], false));
+  });
+}
+
+// Topic descriptions/counts can differ for the federal jurisdiction (see resolveTopic).
+// This updates the text of the existing checkbox rows in place, without touching their
+// checked state, whenever the selected jurisdiction changes.
+function refreshTopicRowText(){
+  const isFederal = currentState().code === "FED";
+  const all = Object.assign({}, TOPICS, BONUS_TOPICS);
+  Object.keys(all).forEach(id=>{
+    const cb = document.querySelector('input[data-topic="' + id + '"]');
+    if (!cb) return;
+    const resolved = resolveTopic(all[id], isFederal);
+    const row = cb.closest(".topic");
+    row.querySelector(".topic-desc").textContent = resolved.short;
+    row.querySelector(".topic-count").textContent = resolved.items.length + " record categories";
+  });
+}
+
+/* ---------- Step 6: how-to-submit guidance ---------- */
+// Ballotpedia, "List of who can make public record requests by state" (accessed 2025):
+// these states currently limit the right to request records to state residents.
+const RESIDENCY_STATES = ["AL","AR","DE","KY","NJ","TN","VA"];
+
+function stateSlug(name){
+  return name.toLowerCase().replace(/[^a-z0-9\s-]/g,"").trim().replace(/\s+/g,"-");
+}
+
+function renderSubmitGuidance(){
+  const s = currentState();
+  const agency = $("#agencyName").value.trim();
+  const agencyLabel = agency || "this agency";
+  const isFederal = s.code === "FED";
+  const isResidencyState = RESIDENCY_STATES.includes(s.code);
+
+  const steps = [];
+  if (isFederal){
+    steps.push("Send it to the specific agency that holds the records, not a general government address \u2014 e.g., ICE, CBP, and DHS each run their own FOIA office. Check " + escapeHtml(agencyLabel) + "'s FOIA page (usually at [agency-site]/foia) for its current mailing address, the online portal it uses, and any required form.");
+    steps.push("Most agencies now accept requests through the government-wide portal at foia.gov, which routes the request to the right component automatically; some large agencies (e.g., DHS and its components) also run their own e-FOIA portal.");
+    steps.push("Send it in writing, keep proof you sent it, and ask for a tracking number \u2014 the agency's acknowledgment letter will include one, and you'll need it to check status or follow up.");
+    steps.push("Note the date you sent it: that's what starts the 20-business-day response clock under " + escapeHtml(s.actName) + " (extendable by 10 more business days for \u201cunusual circumstances\u201d).");
+    steps.push("If the request is denied, delayed, or only partly filled, file an administrative appeal with the agency first (the denial letter will explain how); federal courts generally require that step before a lawsuit.");
+  } else {
+    steps.push("Find the right custodian. Check " + escapeHtml(agencyLabel) + "'s own website for a \u201cPublic Records,\u201d \u201cFOIA,\u201d \u201cRight to Know,\u201d or \u201cOpen Records\u201d page \u2014 many agencies use a dedicated online portal (common ones include NextRequest, GovQA, and JustFOIA) or name a specific records officer. If you can't find one, address the letter to the agency's clerk, records custodian, or legal counsel.");
+    if (isResidencyState){
+      steps.push(escapeHtml(s.name) + " is one of a small number of states that limits who can request records under its public records law to state residents (in some cases this extends to in-state businesses or news organizations). If you're not a resident, consider requesting through an in-state proxy or a filing service.");
+    }
+    steps.push("Send it in writing, by whatever channel the agency prefers (its online portal, email, mail, or fax), and keep proof you sent it \u2014 a sent-email copy, certified-mail receipt, or portal confirmation.");
+    steps.push("Ask the agency to confirm receipt and give you a tracking or case number. Note the date you sent it: that's what starts the response clock under the " + escapeHtml(s.actName) + ".");
+    steps.push("Follow up if you don't hear back by the deadline. If the request is denied, delayed, or only partly filled, use the agency's or state's administrative appeal process before considering court \u2014 many states have an open-government ombudsperson, public access counselor, or records review board that can weigh in first.");
+  }
+
+  let html = "";
+  if (isResidencyState && !isFederal){
+    html += '<div class="submit-residency"><b>' + escapeHtml(s.name) + ':</b> requests must generally come from a state resident. See step 2 below.</div>';
+  }
+  html += '<ol class="submit-steps">' + steps.map(st=>'<li>' + st + '</li>').join("") + '</ol>';
+
+  if (isFederal){
+    const agencySearchUrl = "https://www.google.com/search?q=" + encodeURIComponent((agency || "the agency") + " FOIA office mailing address portal");
+    html += '<div class="submit-links">' +
+      '<a href="https://www.foia.gov/" target="_blank" rel="noopener">File or track a request at foia.gov</a>' +
+      '<a href="' + agencySearchUrl + '" target="_blank" rel="noopener">Search for ' + escapeHtml(agencyLabel) + '\u2019s FOIA office</a>' +
+      '<a href="https://www.muckrock.com/place/united-states-of-america/" target="_blank" rel="noopener">Browse federal agencies &amp; typical response times (MuckRock)</a>' +
+      '<a href="https://foia.wiki/wiki/Main_Page" target="_blank" rel="noopener">FOIA Wiki \u2014 practical guidance by topic and agency</a>' +
+    '</div>';
+  } else {
+    const muckrockUrl = "https://www.muckrock.com/place/united-states-of-america/" + stateSlug(s.name) + "/";
+    const agencySearchUrl = "https://www.google.com/search?q=" + encodeURIComponent((agency || s.name + " agency") + " " + s.name + " public records request portal");
+    const statuteSearchUrl = "https://www.google.com/search?q=" + encodeURIComponent(s.actName + " " + s.citation + " full text");
+    html += '<div class="submit-links">' +
+      '<a href="' + muckrockUrl + '" target="_blank" rel="noopener">Browse ' + escapeHtml(s.name) + ' agencies &amp; typical response times (MuckRock)</a>' +
+      '<a href="' + agencySearchUrl + '" target="_blank" rel="noopener">Search for ' + escapeHtml(agencyLabel) + '\u2019s records request page</a>' +
+      '<a href="' + statuteSearchUrl + '" target="_blank" rel="noopener">Search for the current text of the ' + escapeHtml(s.actName) + '</a>' +
+      '<a href="https://www.nfoic.org/state-freedom-of-information-laws/" target="_blank" rel="noopener">State-by-state FOI organizations &amp; hotlines (NFOIC)</a>' +
+    '</div>';
+  }
+  $("#submitGuidance").innerHTML = html;
+}
+
+function selectedTopicIds(){
+  return Array.from(document.querySelectorAll("input[data-topic]:checked")).map(el=>el.getAttribute("data-topic"));
+}
+
+function renderFeeWaiverNote(){
+  const s = currentState();
+  const fw = s.feeWaiver;
+  const tierLabel = fw.tier === "mandatory" ? "Mandatory when shown"
+    : fw.tier === "discretionary" ? "Discretionary, but supported by statute"
+    : "Not addressed by statute";
+  $("#fwNote").innerHTML =
+    '<div class="fw-note"><b>' + escapeHtml(s.name) + ': ' + tierLabel + '.</b> ' + escapeHtml(fw.note) +
+    (fw.citation ? ' <span style="font-family:\'IBM Plex Mono\',monospace">(' + escapeHtml(fw.citation) + ')</span>' : '') +
+    '</div>';
+}
+
+// Rebuilds the expedited-processing controls for the current jurisdiction. Only called when
+// the jurisdiction itself changes (not on every keystroke elsewhere) so the checkbox/select
+// inside it don't get reset while someone is typing in an unrelated field.
+function renderExpeditedSection(){
+  const s = currentState();
+  const container = $("#expeditedSection");
+  if (s.expedited && s.expedited.available){
+    const grounds = s.expedited.grounds || [];
+    container.innerHTML =
+      '<label class="feewaiver-toggle" id="expToggleLabel">' +
+        '<input type="checkbox" id="wantExpedited">' +
+        '<span><span class="topic-title">Request expedited processing</span>' +
+        '<span class="topic-desc">Asks the agency to process this ahead of the normal queue, under ' + escapeHtml(s.expedited.citation) + '.</span></span>' +
+      '</label>' +
+      '<div class="field" style="margin-top:10px;">' +
+        '<label class="field-label" for="expeditedGround">Basis for expedited processing</label>' +
+        '<select id="expeditedGround">' +
+          grounds.map(g=>'<option value="' + g.id + '">' + escapeHtml(g.label) + '</option>').join('') +
+        '</select>' +
+      '</div>' +
+      '<div class="fw-note" style="margin-top:10px;">' + escapeHtml(s.expedited.note) + '</div>';
+  } else {
+    container.innerHTML =
+      '<div class="fw-note"><b>Expedited processing:</b> ' + escapeHtml(s.name) +
+      ' does not provide a distinct expedited-processing track separate from its standard response deadline, so there is no separate request to make here.</div>';
+  }
+  rerender();
+}
+
+function collectInput(){
+  const expEl = $("#wantExpedited");
+  const groundEl = $("#expeditedGround");
+  return {
+    state: currentState(),
+    agencyName: $("#agencyName").value.trim(),
+    agencyAddress: $("#agencyAddress").value,
+    topicIds: selectedTopicIds(),
+    customRequestText: $("#customText").value,
+    wantFeeWaiver: $("#wantFeeWaiver").checked,
+    feeCapDollars: $("#feeCap").value.trim(),
+    requesterName: $("#reqName").value.trim(),
+    requesterOrg: $("#reqOrg").value.trim(),
+    requesterAddress: $("#reqAddress").value,
+    requesterEmail: $("#reqEmail").value.trim(),
+    requesterPhone: $("#reqPhone").value.trim(),
+    preferElectronic: $("#preferElectronic").checked,
+    purposeStatement: $("#purposeStatement").value,
+    date: new Date(),
+    topicsMap: Object.assign({}, TOPICS, BONUS_TOPICS),
+    definitions: DEFINITIONS,
+    wantExpedited: expEl ? expEl.checked : false,
+    expeditedGround: groundEl ? groundEl.value : null,
+    dateStart: $("#dateStart").value,
+    dateEnd: $("#dateEnd").value
+  };
+}
+
+let lastLetterText = "";
+function rerender(){
+  renderStatuteChip();
+  renderFeeWaiverNote();
+  renderSubmitGuidance();
+  document.querySelectorAll(".topic").forEach(el=>{
+    const cb = el.querySelector("input[data-topic]");
+    el.classList.toggle("is-checked", cb.checked);
+  });
+  $("#fwToggleLabel").classList.toggle("is-checked", $("#wantFeeWaiver").checked);
+
+  const input = collectInput();
+  const text = generateLetter(input);
+  lastLetterText = text;
+  $("#letterOut").value = text;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+function setStatus(msg, ms){
+  const el = $("#statusMsg");
+  el.textContent = msg;
+  if (ms) setTimeout(()=>{ if (el.textContent===msg) el.textContent=""; }, ms);
+}
+
+function wireEvents(){
+  // Every form control regenerates the letter, EXCEPT the letter box itself: that one is
+  // directly editable, so its own input just tracks the edited text without overwriting it.
+  document.querySelectorAll("input, select, textarea").forEach(el=>{
+    if (el.id === "letterOut") return;
+    el.addEventListener("input", rerender);
+    el.addEventListener("change", rerender);
+  });
+  $("#letterOut").addEventListener("input", (e)=>{ lastLetterText = e.target.value; });
+
+  // The expedited-processing controls are rebuilt (not just re-rendered) whenever the
+  // jurisdiction changes, since availability depends on the jurisdiction. Rebuilding on
+  // every keystroke elsewhere would reset the checkbox, so it's wired separately here via
+  // delegation on the stable container rather than the generic loop above.
+  $("#stateSelect").addEventListener("change", ()=>{ refreshTopicRowText(); renderExpeditedSection(); });
+  $("#expeditedSection").addEventListener("change", (e)=>{
+    if (e.target && (e.target.id === "wantExpedited" || e.target.id === "expeditedGround")) rerender();
+  });
+
+  $("#copyBtn").addEventListener("click", async ()=>{
+    try{
+      await navigator.clipboard.writeText(lastLetterText);
+      setStatus("Copied to clipboard.", 2500);
+    }catch(e){
+      try{
+        const ta = document.createElement("textarea");
+        ta.value = lastLetterText; ta.style.position="fixed"; ta.style.opacity="0";
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        setStatus("Copied to clipboard.", 2500);
+      }catch(e2){
+        setStatus("Couldn't copy automatically \u2014 select the text and copy manually.", 4000);
+      }
+    }
+  });
+
+  $("#printBtn").addEventListener("click", ()=>{
+    $("#printMirror").textContent = lastLetterText;
+    window.print();
+  });
+
+  $("#downloadBtn").addEventListener("click", async ()=>{
+    const s = currentState();
+    const fname = "public-records-request-" + s.code.toLowerCase() + ".txt";
+    try{
+      const downloads = await claude.use("downloads");
+      if (!downloads){ throw new Error("unavailable"); }
+      await downloads.save({ filename: fname, data: lastLetterText });
+      setStatus("Saved.", 2500);
+    }catch(err){
+      setStatus("Download isn't available in this view \u2014 use Copy instead.", 4000);
+    }
+  });
+}
+
+buildStateSelect();
+buildTopics();
+wireEvents();
+renderExpeditedSection();
+rerender();
+// Default: check the three required topics on load so the letter isn't empty.
+document.querySelectorAll('input[data-topic="immigration"], input[data-topic="palantir"], input[data-topic="flock"]').forEach(cb=>cb.checked=true);
+rerender();
+</script>
+</body>
+</html>
